@@ -1,0 +1,24 @@
+{
+  "name": "nala-lingo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "nala": "node nala/utils/nala.run.js",
+    "a11y": "node nala/utils/nala.cli.js a11y",
+    "nala-test-gen": "node nala/utils/test-gen/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.0",
+    "@playwright/test": "1.56.0",
+    "axe-html-reporter": "2.2.11",
+    "axios": "1.7.5",
+    "chalk": "4.1.2",
+    "commander": "12.1.0",
+    "playwright": "1.56.0"
+  }
+}
