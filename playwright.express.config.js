@@ -1,19 +1,48 @@
-Express-config:
-
-
 // @ts-check
 const { devices } = require('@playwright/test');
 
-const envs = require('../envs/envs.js');
+const envs = require('./envs/env.js');
+
+/** Align default baseURL with `LINGO_GEO_ENV` when `BASE_URL` is unset. */
+function resolveExpressBaseUrl() {
+  if (process.env.BASE_URL) return process.env.BASE_URL;
+  const mode = (process.env.LINGO_GEO_ENV || '').toLowerCase();
+  if (mode === 'prod' || mode === 'production') {
+    return envs['@express_lingo_prod'];
+  }
+  if (mode === 'stage') {
+    return envs['@express_lingo_stage'];
+  }
+  return undefined;
+}
+
+/**
+ * Resolve a spec path to a full URL.
+ *   - Absolute URLs are returned as-is.
+ *   - Relative paths use the correct origin from `LINGO_GEO_ENV`:
+ *       prod  → www.adobe.com / business.adobe.com
+ *       stage (default) → www.stage.adobe.com / business.stage.adobe.com
+ *   - Paths containing /products/ route to the BACOM origin.
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+function resolveLingoGeoPath(path) {
+  if (!path || /^https?:\/\//i.test(String(path))) return String(path ?? '');
+  const p = String(path).startsWith('/') ? String(path) : `/${String(path)}`;
+  const isProd = (process.env.LINGO_GEO_ENV || 'stage').toLowerCase().startsWith('prod');
+  const acom = isProd ? envs['@adobe_prod'] : envs['@adobe_stage'];
+  const bacom = isProd ? envs['@bacom_prod'] : envs['@bacom_stage'];
+  return `${p.includes('/products/') ? bacom : acom}${p}`;
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  * @type {import('@playwright/test').PlaywrightTestConfig}
  */
 const config = {
-  testDir: '../tests/express',
-  outputDir: '../test-results',
-  globalSetup: '../global.setup.js',
+  testDir: './tests/express',
+  outputDir: './test-results',
   /* Maximum time one test can run for. */
   timeout: 90 * 1000,
   expect: {
@@ -33,40 +62,37 @@ const config = {
   workers: process.env.CI ? 2 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [['github'], ['../utils/reporters/json-reporter.js'], ['../utils/reporters/json-reporter.js']]
-    : [['html', { outputFolder: 'test-html-results' }], ['list'], ['../utils/reporters/base-reporter.js']],
+    ? [['github'], ['list'], ['./nala/utils/base-reporter.js']]
+    : [['html', { outputFolder: 'test-html-results' }], ['list'], ['./nala/utils/base-reporter.js']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 60000,
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
-
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    baseURL: process.env.BASE_URL || envs['@express_stage'] || 'https://www.stage.adobe.com/express',
+    baseURL: resolveExpressBaseUrl() || envs['@express_lingo_stage'],
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'express-live-chrome',
+      name: 'da-express-live-chrome',
       use: { ...devices['Desktop Chrome'] },
       retries: 0,
     },
 
     {
-      name: 'express-live-firefox',
+      name: 'da-express-live-firefox',
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
-      name: 'express-live-webkit',
+      name: 'da-express-live-webkit',
       use: { ...devices['Desktop Safari'] },
     },
 
     {
-      name: 'express-live-IOS-mobile',
+      name: 'da-express-live-IOS-mobile',
       use: {
         ...devices['iPhone 15'],
         userAgent:
@@ -81,7 +107,7 @@ const config = {
     },
 
     {
-      name: 'express-live-Android-mobile',
+      name: 'da-express-live-Android-mobile',
       use: {
         ...devices['Galaxy S24'],
         userAgent:
@@ -95,5 +121,6 @@ const config = {
     },
   ],
 };
-export default config;
 
+module.exports = config;
+module.exports.resolveLingoGeoPath = resolveLingoGeoPath;

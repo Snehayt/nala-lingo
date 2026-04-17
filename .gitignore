@@ -1,3 +1,4 @@
 test-html-results/
 test-results/
 test-a11y-results/
+node_modules/

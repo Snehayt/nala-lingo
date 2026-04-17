@@ -17,4 +17,6 @@ module.exports = {
   '@bacom_stage': 'https://business.stage.adobe.com',
   '@bacomblog_live': 'https://main--da-bacom-blog--adobecom.aem.live',
   '@bacomblog_prod': 'https://business.adobe.com/blog',
+   '@express_lingo_stage': 'https://www.stage.adobe.com/express',
+  '@express_lingo_prod': 'https://www.adobe.com/express',
 };
