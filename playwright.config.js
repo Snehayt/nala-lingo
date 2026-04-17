@@ -2,20 +2,21 @@
 
 const { devices } = require('@playwright/test');
 
-let PROJECT, ORG, BASE_URLS;
+let PROJECT, ORG, BASE_URLS, PLAYWRIGHT_PROJECT_SLUG;
 try {
-  ({ PROJECT, ORG, BASE_URLS } = require('./nala/libs/config.js'));
+  ({ PROJECT, ORG, BASE_URLS, PLAYWRIGHT_PROJECT_SLUG } = require('./nala/libs/config.js'));
 } catch {
   const { DEFAULT_REPO, DEFAULT_ORG, BASE_URLS: DEFAULT_URLS } = require('./nala/libs/constants.cjs');
   PROJECT = DEFAULT_REPO;
   ORG = DEFAULT_ORG;
   BASE_URLS = DEFAULT_URLS;
+  PLAYWRIGHT_PROJECT_SLUG = 'milo';
 }
 
 const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.18 Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1 NALA-Acom';
-
+const PLAYWRIGHT_DESKTOP_SLUG = PLAYWRIGHT_PROJECT_SLUG || 'milo';
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
   testDir: './nala',
@@ -41,21 +42,21 @@ const config = {
   },
   projects: [
     {
-      name: `${PROJECT}-live-chromium`,
+      name: `${PLAYWRIGHT_DESKTOP_SLUG}-live-chromium`,
       use: {
         ...devices['Desktop Chrome'],
         userAgent: USER_AGENT_DESKTOP,
       },
     },
     {
-      name: `${PROJECT}-live-firefox`,
+      name: `${PLAYWRIGHT_DESKTOP_SLUG}-live-firefox`,
       use: {
         ...devices['Desktop Firefox'],
         userAgent: USER_AGENT_DESKTOP,
       },
     },
     {
-      name: `${PROJECT}-live-webkit`,
+      name: `${PLAYWRIGHT_DESKTOP_SLUG}-live-webkit`,
       use: {
         ...devices['Desktop Safari'],
         userAgent: USER_AGENT_DESKTOP,
